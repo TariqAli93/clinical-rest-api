@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Users {
+  id          Int         @id @default(autoincrement())
+  uid         String      @default(uuid())
+  userName    String      @unique
+  email       String      @unique
+  phoneNumber String      @unique
+  password    String
+  provinceId  Int
+  Provinces   Provinces   @relation(fields: [provinceId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  Privilege   Privilege[]
+  deleted     Boolean     @default(false)
+}
+
+model Roles {
+  id        Int         @id @default(autoincrement())
+  roleName  String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Privilege Privilege[]
+}
+
+model Privilege {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  roleId    Int
+  Role      Roles    @relation(fields: [roleId], references: [id])
+  User      Users    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Provinces {
+  id           Int          @id @default(autoincrement())
+  provinceName String       @unique
+  Users        Users[]
+  Doctors      Doctors[]
+  Clinics      Clinics[]
+  assistants   Assistants[]
+  patients     Patients[]
+}
+
+model Doctors {
+  id                 Int                  @id @default(autoincrement())
+  doctorFullName     String
+  doctorName         String               @unique
+  doctorEmail        String               @unique
+  doctorPhone        String               @unique
+  doctorPassword     String
+  doctorDob          DateTime
+  deleted            Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  Certificates       Certificates[]
+  specialty          specialties          @relation(fields: [specialtiesId], references: [id])
+  specialtiesId      Int
+  provinceId         Int
+  Provinces          Provinces            @relation(fields: [provinceId], references: [id])
+  assistant          Assistants?
+  clinicId           Int
+  clinic             Clinics              @relation(fields: [clinicId], references: [id])
+  DoctorAppointments DoctorAppointments[]
+}
+
+model Certificates {
+  id                Int      @id @default(autoincrement())
+  certificateName   String
+  certificateDate   DateTime
+  certificateNumber String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  doctorId          Int
+  Doctors           Doctors  @relation(fields: [doctorId], references: [id])
+}
+
+model specialties {
+  id            Int       @id @default(autoincrement())
+  specialtyName String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deleted       Boolean   @default(false)
+  Doctors       Doctors[]
+}
+
+model Assistants {
+  id                Int       @id @default(autoincrement())
+  assistantFullName String
+  assistantName     String    @unique
+  assistantPhone    String    @unique
+  assistantEmail    String    @unique
+  assistantPassword String
+  deleted           Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  provinceId        Int
+  Provinces         Provinces @relation(fields: [provinceId], references: [id])
+  doctorId          Int
+  doctor            Doctors   @relation(fields: [doctorId], references: [id])
+}
+
+model Clinics {
+  id             Int       @id @default(autoincrement())
+  clinicName     String    @unique
+  clinicPhone    String    @unique
+  clinicEmail    String    @unique
+  clinicLocation String
+  clinicDistrict String
+  clinicAddress  String
+  deleted        Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  provinceId     Int
+  Provinces      Provinces @relation(fields: [provinceId], references: [id])
+  Doctors        Doctors[]
+}
+
+model Patients {
+  id                   Int                    @id @default(autoincrement())
+  patientName          String
+  patientPhone         String                 @unique
+  patientDob           String
+  provinceId           Int
+  Provinces            Provinces              @relation(fields: [provinceId], references: [id])
+  deleted              Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  PatientPrescriptions PatientPrescriptions[]
+  DoctorAppointments   DoctorAppointments[]
+}
+
+model Appointments {
+  id                 Int                  @id @default(autoincrement())
+  dateTime           String               @unique
+  deleted            Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  DoctorAppointments DoctorAppointments[]
+}
+
+model DoctorAppointments {
+  id                 Int          @id @default(autoincrement())
+  doctorId           Int
+  appointmentId      Int
+  patientId          Int
+  doctor             Doctors      @relation(fields: [doctorId], references: [id])
+  appointment        Appointments @relation(fields: [appointmentId], references: [id])
+  patients           Patients     @relation(fields: [patientId], references: [id])
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  AppointmentDeleted Boolean      @default(false)
+}
+
+model Prescriptions {
+  id                      Int                       @id @default(autoincrement())
+  diagnosis               String
+  symptoms                String
+  deleted                 Boolean                   @default(false)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  PatientPrescriptions    PatientPrescriptions[]
+  PrescriptionMedications PrescriptionMedications[]
+}
+
+model Medications {
+  id                      Int                       @id @default(autoincrement())
+  commercialName          String
+  scientificName          String
+  PrescriptionMedications PrescriptionMedications[]
+}
+
+model PatientPrescriptions {
+  id             Int           @id @default(autoincrement())
+  patientId      Int
+  prescriptionId Int
+  patients       Patients      @relation(fields: [patientId], references: [id])
+  prescriptions  Prescriptions @relation(fields: [prescriptionId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model PrescriptionMedications {
+  id             Int           @id @default(autoincrement())
+  prescriptionId Int
+  medicationId   Int
+  prescriptions  Prescriptions @relation(fields: [prescriptionId], references: [id])
+  medications    Medications   @relation(fields: [prescriptionId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
