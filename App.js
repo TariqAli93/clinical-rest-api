@@ -10,6 +10,8 @@ import clinicRoutes from './routes/clinics.routes.js'
 import assistantRoutes from './routes/assistants.routes.js'
 import patientsRoutes from './routes/patients.routes.js'
 import appointmentRoutes from './routes/appointments.routes.js'
+import medicationRoutes from './routes/medications.routes.js'
+import prescriptionRoutes from './routes/prescriptions.routes.js'
 
 const App = express()
 dotenv.config()
@@ -26,6 +28,8 @@ clinicRoutes(App)
 assistantRoutes(App)
 patientsRoutes(App)
 appointmentRoutes(App)
+medicationRoutes(App)
+prescriptionRoutes(App)
 
 App.use(
   history({

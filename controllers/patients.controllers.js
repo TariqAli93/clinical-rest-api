@@ -1,7 +1,5 @@
 import prismaClient from '@prisma/client'
-const {
-  PrismaClient
-} = prismaClient
+const { PrismaClient } = prismaClient
 const prisma = new PrismaClient()
 
 export const CreatePatients = async (req, res) => {
