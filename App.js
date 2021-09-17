@@ -3,7 +3,6 @@ import history from 'connect-history-api-fallback'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
-import UserRoutes from './routes/users.routes.js'
 import SpecialtieRoutes from './routes/specialties.routes.js'
 import DoctorRoutes from './routes/doctors.routes.js'
 import clinicRoutes from './routes/clinics.routes.js'
@@ -12,6 +11,7 @@ import patientsRoutes from './routes/patients.routes.js'
 import appointmentRoutes from './routes/appointments.routes.js'
 import medicationRoutes from './routes/medications.routes.js'
 import prescriptionRoutes from './routes/prescriptions.routes.js'
+import authenticationRoutes from './routes/authentication.routes.js'
 
 const App = express()
 dotenv.config()
@@ -21,7 +21,6 @@ App.use(express.json())
 App.use(express.urlencoded({ extended: false }))
 
 // routes
-UserRoutes(App)
 SpecialtieRoutes(App)
 DoctorRoutes(App)
 clinicRoutes(App)
@@ -30,6 +29,7 @@ patientsRoutes(App)
 appointmentRoutes(App)
 medicationRoutes(App)
 prescriptionRoutes(App)
+authenticationRoutes(App)
 
 App.use(
   history({

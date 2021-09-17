@@ -10,9 +10,8 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Users {
+model Admin {
   id          Int         @id @default(autoincrement())
-  uid         String      @default(uuid())
   userName    String      @unique
   email       String      @unique
   phoneNumber String      @unique
@@ -21,32 +20,13 @@ model Users {
   Provinces   Provinces   @relation(fields: [provinceId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  Privilege   Privilege[]
   deleted     Boolean     @default(false)
-}
-
-model Roles {
-  id        Int         @id @default(autoincrement())
-  roleName  String      @unique
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  Privilege Privilege[]
-}
-
-model Privilege {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  roleId    Int
-  Role      Roles    @relation(fields: [roleId], references: [id])
-  User      Users    @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Provinces {
   id           Int          @id @default(autoincrement())
   provinceName String       @unique
-  Users        Users[]
+  Admin        Admin[]
   Doctors      Doctors[]
   Clinics      Clinics[]
   assistants   Assistants[]
@@ -54,25 +34,26 @@ model Provinces {
 }
 
 model Doctors {
-  id                 Int                  @id @default(autoincrement())
-  doctorFullName     String
-  doctorName         String               @unique
-  doctorEmail        String               @unique
-  doctorPhone        String               @unique
-  doctorPassword     String
-  doctorDob          DateTime
-  deleted            Boolean              @default(false)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  Certificates       Certificates[]
-  specialty          specialties          @relation(fields: [specialtiesId], references: [id])
-  specialtiesId      Int
-  provinceId         Int
-  Provinces          Provinces            @relation(fields: [provinceId], references: [id])
-  assistant          Assistants?
-  clinicId           Int
-  clinic             Clinics              @relation(fields: [clinicId], references: [id])
-  DoctorAppointments DoctorAppointments[]
+  id                  Int                   @id @default(autoincrement())
+  doctorFullName      String
+  doctorName          String                @unique
+  doctorEmail         String                @unique
+  doctorPhone         String                @unique
+  doctorPassword      String
+  doctorDob           DateTime
+  deleted             Boolean               @default(false)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  Certificates        Certificates[]
+  specialty           specialties           @relation(fields: [specialtiesId], references: [id])
+  specialtiesId       Int
+  provinceId          Int
+  Provinces           Provinces             @relation(fields: [provinceId], references: [id])
+  assistant           Assistants?
+  clinicId            Int
+  clinic              Clinics               @relation(fields: [clinicId], references: [id])
+  DoctorAppointments  DoctorAppointments[]
+  DoctorPrescriptions DoctorPrescriptions[]
 }
 
 model Certificates {
@@ -172,6 +153,7 @@ model Prescriptions {
   updatedAt               DateTime                  @updatedAt
   PatientPrescriptions    PatientPrescriptions[]
   PrescriptionMedications PrescriptionMedications[]
+  DoctorPrescriptions     DoctorPrescriptions[]
 }
 
 model Medications {
@@ -179,6 +161,7 @@ model Medications {
   commercialName          String
   scientificName          String
   PrescriptionMedications PrescriptionMedications[]
+  deleted                 Boolean                   @default(false)
 }
 
 model PatientPrescriptions {
@@ -189,6 +172,18 @@ model PatientPrescriptions {
   prescriptions  Prescriptions @relation(fields: [prescriptionId], references: [id])
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  deleted        Boolean       @default(false)
+}
+
+model DoctorPrescriptions {
+  id             Int           @id @default(autoincrement())
+  doctorId       Int
+  prescriptionId Int
+  Doctors        Doctors       @relation(fields: [doctorId], references: [id])
+  Prescriptions  Prescriptions @relation(fields: [prescriptionId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deleted        Boolean       @default(false)
 }
 
 model PrescriptionMedications {
@@ -196,7 +191,8 @@ model PrescriptionMedications {
   prescriptionId Int
   medicationId   Int
   prescriptions  Prescriptions @relation(fields: [prescriptionId], references: [id])
-  medications    Medications   @relation(fields: [prescriptionId], references: [id])
+  medications    Medications   @relation(fields: [medicationId], references: [id])
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  deleted        Boolean       @default(false)
 }

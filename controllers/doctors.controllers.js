@@ -124,149 +124,120 @@ export const DeleteDoctors = async (req, res) => {
 }
 
 export const GetDoctors = async (req, res) => {
-  await prisma.doctors
-    .findMany({
+  try {
+    const doctors = await prisma.doctors.findMany({
+      where: {
+        deleted: false
+      },
       include: {
         Certificates: true,
         Provinces: true,
         specialty: true,
         clinic: true,
         assistant: true
-      },
-      where: {
-        deleted: false
       }
     })
-    .then((doctor) => {
-      const doctors = doctor.map((doc) => {
-        let assistant = {}
-        if (!doc.assistant.deleted && Object.keys(doc.assistant).length > 0) {
-          assistant = doc.assistant
-        }
-        return {
-          doc_id: doc.id,
-          doc_full_name: doc.doctorFullName,
-          doc_name: doc.doctorName,
-          doc_phone: doc.doctorPhone,
-          doc_email: doc.doctorEmail,
-          doc_dob: doc.doctorDob,
-          doc_assistant: {
-            doc_assistant_id: assistant.id,
-            doc_assistant_name: assistant.assistantFullName
-          },
-          doc_specialty: {
-            doc_specialty_id: doc.specialty.id,
-            doc_specialty_name: doc.specialty.specialtyName
-          },
-          doc_province: {
-            doc_province_id: doc.Provinces.id,
-            doc_province_name: doc.Provinces.provinceName
-          },
-          doc_clinic: {
-            doc_clinic_id: doc.clinic.id,
-            doc_clinic_name: doc.clinic.clinicName,
-            doc_clinic_phone: doc.clinic.clinicPhone,
-            doc_clinic_email: doc.clinic.clinicEmail,
-            doc_clinic_location: doc.clinic.clinicLocation
-          },
-          doc_certificates: doc.Certificates.map((certificate) => {
-            return {
-              doc_certificate_id: certificate.id,
-              doc_certificate_name: certificate.certificateName,
-              doc_certificate_date: certificate.certificateDate
-            }
-          })
-        }
-      })
 
-      if (doctor.length < 1) {
-        res.status(404).send({ message: 'No Doctors Found' })
-        return
+    const doctor = doctors.map(doc => {
+      return {
+        doc_id: doc.id,
+        doc_full_name: doc.doctorFullName,
+        doc_name: doc.doctorName,
+        doc_phone: doc.doctorPhone,
+        doc_email: doc.doctorEmail,
+        doc_dob: doc.doctorDob,
+        assistant: doc.assistant,
+        doc_specialty: {
+          doc_specialty_id: doc.specialty.id,
+          doc_specialty_name: doc.specialty.specialtyName
+        },
+        doc_province: {
+          doc_province_id: doc.Provinces.id,
+          doc_province_name: doc.Provinces.provinceName
+        },
+        doc_clinic: {
+          doc_clinic_id: doc.clinic.id,
+          doc_clinic_name: doc.clinic.clinicName,
+          doc_clinic_phone: doc.clinic.clinicPhone,
+          doc_clinic_email: doc.clinic.clinicEmail,
+          doc_clinic_location: doc.clinic.clinicLocation
+        },
+        doc_certificates: doc.Certificates.map((certificate) => {
+          return {
+            doc_certificate_id: certificate.id,
+            doc_certificate_name: certificate.certificateName,
+            doc_certificate_date: certificate.certificateDate
+          }
+        })
       }
-
-      res.send(doctors)
     })
-    .catch((err) => {
-      console.log(err)
-      res.status(500).send({ message: err })
-    })
+    res.status(200).send(doctor)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: err })
+  }
 }
 
 export const GetDoctorsById = async (req, res) => {
-  const id = Number(req.params.id)
-  await prisma.doctors
-    .findMany({
+  try {
+    const doctors = await prisma.doctors.findMany({
+      where: {
+        AND: [
+          {
+            deleted: false
+          },
+          {
+            id: {
+              equals: Number(req.params.id)
+            }
+          }
+        ]
+      },
       include: {
         Certificates: true,
         Provinces: true,
         specialty: true,
         clinic: true,
         assistant: true
-      },
-      where: {
-        AND: [
-          {
-            id: {
-              equals: id
-            }
-          },
-          {
-            deleted: false
+      }
+    })
+
+    const doctor = doctors.map(doc => {
+      return {
+        doc_id: doc.id,
+        doc_full_name: doc.doctorFullName,
+        doc_name: doc.doctorName,
+        doc_phone: doc.doctorPhone,
+        doc_email: doc.doctorEmail,
+        doc_dob: doc.doctorDob,
+        assistant: doc.assistant,
+        doc_specialty: {
+          doc_specialty_id: doc.specialty.id,
+          doc_specialty_name: doc.specialty.specialtyName
+        },
+        doc_province: {
+          doc_province_id: doc.Provinces.id,
+          doc_province_name: doc.Provinces.provinceName
+        },
+        doc_clinic: {
+          doc_clinic_id: doc.clinic.id,
+          doc_clinic_name: doc.clinic.clinicName,
+          doc_clinic_phone: doc.clinic.clinicPhone,
+          doc_clinic_email: doc.clinic.clinicEmail,
+          doc_clinic_location: doc.clinic.clinicLocation
+        },
+        doc_certificates: doc.Certificates.map((certificate) => {
+          return {
+            doc_certificate_id: certificate.id,
+            doc_certificate_name: certificate.certificateName,
+            doc_certificate_date: certificate.certificateDate
           }
-        ]
+        })
       }
     })
-    .then((doctor) => {
-      const doctors = doctor.map((doc) => {
-        let assistant = {}
-        if (!doc.assistant.deleted && Object.keys(doc.assistant).length > 0) {
-          assistant = doc.assistant
-        }
-        return {
-          doc_id: doc.id,
-          doc_full_name: doc.doctorFullName,
-          doc_name: doc.doctorName,
-          doc_phone: doc.doctorPhone,
-          doc_email: doc.doctorEmail,
-          doc_dob: doc.doctorDob,
-          doc_assistant: {
-            doc_assistant_id: assistant.id,
-            doc_assistant_name: assistant.assistantFullName
-          },
-          doc_specialty: {
-            doc_specialty_id: doc.specialty.id,
-            doc_specialty_name: doc.specialty.specialtyName
-          },
-          doc_province: {
-            doc_province_id: doc.Provinces.id,
-            doc_province_name: doc.Provinces.provinceName
-          },
-          doc_clinic: {
-            doc_clinic_id: doc.clinic.id,
-            doc_clinic_name: doc.clinic.clinicName,
-            doc_clinic_phone: doc.clinic.clinicPhone,
-            doc_clinic_email: doc.clinic.clinicEmail,
-            doc_clinic_location: doc.clinic.clinicLocation
-          },
-          doc_certificates: doc.Certificates.map((certificate) => {
-            return {
-              doc_certificate_id: certificate.id,
-              doc_certificate_name: certificate.certificateName,
-              doc_certificate_date: certificate.certificateDate
-            }
-          })
-        }
-      })
-
-      if (doctor.length < 1) {
-        res.status(404).send({ message: 'No Doctors Found' })
-        return
-      }
-
-      res.send(doctors[0])
-    })
-    .catch((err) => {
-      console.log(err)
-      res.status(500).send({ message: err.message })
-    })
+    res.status(200).send(doctor)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: err })
+  }
 }

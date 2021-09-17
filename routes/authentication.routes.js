@@ -1,13 +1,13 @@
-// DoctorLogin
-// AssistantLogin
-// AdminLogin
-
 import {
   DoctorLogin,
   AssistantLogin,
   AdminLogin
-} from '../controllers/auth.controllers.js'
+} from '../controllers/authentication.controllers.js'
 
-const authenticationRoutes = (app) => {}
+const authenticationRoutes = (app) => {
+  app.post('/api/login/admin', AdminLogin)
+  app.post('/api/login/doctor', DoctorLogin)
+  app.post('/api/login/assistant', AssistantLogin)
+}
 
 export default authenticationRoutes
