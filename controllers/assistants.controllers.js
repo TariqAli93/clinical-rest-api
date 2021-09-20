@@ -3,13 +3,12 @@ const { PrismaClient } = prismaClient
 const prisma = new PrismaClient()
 
 export const CreateAssistants = async (req, res) => {
-  const isBodyEmpty = Object.keys(req.body).length === 0
-  if (isBodyEmpty) {
-    return res.status(500).send({ message: 'invalid request, missing body' })
-  }
-
-  await prisma.assistants
-    .create({
+  try {
+    if (Object.keys(req.body).length === 0) {
+      res.status(500).send({ message: 'invalid request, missing body' })
+      return
+    }
+    const assistants = await prisma.assistants.create({
       data: {
         assistantFullName: req.body.fullname,
         assistantName: req.body.username,
@@ -20,36 +19,36 @@ export const CreateAssistants = async (req, res) => {
         provinceId: req.body.provinceId
       }
     })
-    .then((assistants) => res.send(assistants))
-    .catch(err => {
-      console.log(err)
-      if (err.code === 'P2002') {
-        switch (err.meta.target) {
-          case 'assistantName_unique':
-            res.status(500).send({ message: 'assistant name already exists' })
-            break
-          case 'assistantEmail_unique':
-            res.status(500).send({ message: 'assistant email already exists' })
-            break
-          case 'assistantPhone_unique':
-            res.status(500).send({ message: 'assistant phone already exists' })
-            break
-          default:
-            res.status(500).send(err.message)
-        }
-      } else {
-        res.status(500).send(err.message)
+
+    res.status(200).send(assistants)
+  } catch (err) {
+    if (err.code === 'P2002') {
+      switch (err.meta.target) {
+        case 'assistantName_unique':
+          res.status(500).send({ message: 'assistant name already exists' })
+          break
+        case 'assistantEmail_unique':
+          res.status(500).send({ message: 'assistant email already exists' })
+          break
+        case 'assistantPhone_unique':
+          res.status(500).send({ message: 'assistant phone already exists' })
+          break
+        default:
+          res.status(500).send(err.message)
       }
-    })
+    } else {
+      res.status(500).send(err.message)
+    }
+  }
 }
 export const UpdateAssistants = async (req, res) => {
-  const isBodyEmpty = Object.keys(req.body).length === 0
-  if (isBodyEmpty) {
-    return res.status(500).send({ message: 'invalid request, missing body' })
-  }
+  try {
+    if (Object.keys(req.body).length === 0) {
+      res.status(500).send({ message: 'invalid request, missing body' })
+      return
+    }
 
-  await prisma.assistants
-    .update({
+    const assistants = await prisma.assistants.update({
       where: {
         id: Number(req.params.id)
       },
@@ -62,38 +61,39 @@ export const UpdateAssistants = async (req, res) => {
         provinceId: req.body.provinceId
       }
     })
-    .then((assistants) => res.send(assistants))
-    .catch(err => {
-      console.log(err)
-      if (err.code === 'P2002') {
-        switch (err.meta.target) {
-          case 'assistantName_unique':
-            res.status(500).send({ message: 'assistant name already exists' })
-            break
-          case 'assistantEmail_unique':
-            res.status(500).send({ message: 'assistant email already exists' })
-            break
-          case 'assistantPhone_unique':
-            res.status(500).send({ message: 'assistant phone already exists' })
-            break
-          default:
-            res.status(500).send(err.message)
-        }
-      } else {
-        res.status(500).send(err.message)
+
+    res.status(200).send(assistants)
+  } catch (err) {
+    if (err.code === 'P2002') {
+      switch (err.meta.target) {
+        case 'assistantName_unique':
+          res.status(500).send({ message: 'assistant name already exists' })
+          break
+        case 'assistantEmail_unique':
+          res.status(500).send({ message: 'assistant email already exists' })
+          break
+        case 'assistantPhone_unique':
+          res.status(500).send({ message: 'assistant phone already exists' })
+          break
+        default:
+          res.status(500).send(err.message)
       }
-    })
+    } else {
+      res.status(500).send(err.message)
+    }
+  }
 }
 export const GetAllAssistants = async (req, res) => {
-  await prisma.assistants.findMany({
-    where: {
-      deleted: false
-    },
-    include: {
-      Provinces: true,
-      doctor: true
-    }
-  }).then(assistants => {
+  try {
+    const assistants = await prisma.assistants.findMany({
+      where: {
+        deleted: false
+      },
+      include: {
+        Provinces: true,
+        doctor: true
+      }
+    })
     if (assistants.length < 1) {
       res.status(404).send({ message: 'no assistants found' })
     } else {
@@ -119,30 +119,32 @@ export const GetAllAssistants = async (req, res) => {
       })
       res.send(assistant)
     }
-  }).catch(err => {
+  } catch (err) {
     console.log(err)
     res.status(500).send(err.message)
-  })
+  }
 }
 export const GetAssistantsById = async (req, res) => {
-  await prisma.assistants.findMany({
-    where: {
-      AND: [
-        {
-          id: {
-            equals: Number(req.params.id)
+  try {
+    const assistants = await prisma.assistants.findMany({
+      where: {
+        AND: [
+          {
+            id: {
+              equals: Number(req.params.id)
+            }
+          },
+          {
+            deleted: false
           }
-        },
-        {
-          deleted: false
-        }
-      ]
-    },
-    include: {
-      Provinces: true,
-      doctor: true
-    }
-  }).then(assistants => {
+        ]
+      },
+      include: {
+        Provinces: true,
+        doctor: true
+      }
+    })
+
     if (assistants.length < 1) {
       res.status(404).send({ message: 'no assistants found' })
     } else {
@@ -168,26 +170,27 @@ export const GetAssistantsById = async (req, res) => {
       })
       res.send(assistant)
     }
-  }).catch(err => {
+  } catch (err) {
     console.log(err)
     res.status(500).send(err.message)
-  })
+  }
 }
 export const DeleteAssistants = async (req, res) => {
-  await prisma.assistants.update({
-    where: {
-      id: Number(req.params.id)
-    },
-    data: {
-      deleted: true
-    }
-  }).then(() => {
-    res.send({ message: 'assistants deleted successfully' })
-  }).catch(err => {
+  try {
+    const assistants = await prisma.assistants.update({
+      where: {
+        id: Number(req.params.id)
+      },
+      data: {
+        deleted: true
+      }
+    })
+    res.send({ message: 'assistants deleted successfully', assistant: assistants })
+  } catch (err) {
     console.log(err)
     if (err.code === 'P2025') {
       res.status(404).send({ message: 'No assistants found' })
     }
     res.status(500).send({ message: err.message })
-  })
+  }
 }

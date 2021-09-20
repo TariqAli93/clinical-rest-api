@@ -3,11 +3,11 @@ const { PrismaClient } = prismaClient
 const prisma = new PrismaClient()
 
 export const CreateClinics = async (req, res) => {
-  if (Object.keys(req.body).length === 0) {
-    res.status(500).send({ message: 'Invalid request, missing body' })
-  } else {
-    await prisma.clinics
-      .create({
+  try {
+    if (Object.keys(req.body).length === 0) {
+      res.status(500).send({ message: 'Invalid request, missing body' })
+    } else {
+      const clinics = await prisma.clinics.create({
         data: {
           clinicName: req.body.clinicName,
           clinicPhone: req.body.clinicPhone,
@@ -18,38 +18,37 @@ export const CreateClinics = async (req, res) => {
           provinceId: req.body.provinceId
         }
       })
-      .then((clinics) => {
-        console.log(clinics)
-        res.send(clinics)
-      })
-      .catch((err) => {
-        if (err.code === 'P2002') {
-          switch (err.meta.target) {
-            case 'clinicName_unique':
-              res.status(500).send({ message: 'clinic name already exists' })
-              break
-            case 'clinicEmail_unique':
-              res.status(500).send({ message: 'clinic email already exists' })
-              break
-            case 'clinicPhone_unique':
-              res.status(500).send({ message: 'clinic phone already exists' })
-              break
-            default:
-              res.status(500).send(err.message)
-          }
-        } else {
+      console.log(clinics)
+      res.send(clinics)
+    }
+  } catch (err) {
+    if (err.code === 'P2002') {
+      switch (err.meta.target) {
+        case 'clinicName_unique':
+          res.status(500).send({ message: 'clinic name already exists' })
+          break
+        case 'clinicEmail_unique':
+          res.status(500).send({ message: 'clinic email already exists' })
+          break
+        case 'clinicPhone_unique':
+          res.status(500).send({ message: 'clinic phone already exists' })
+          break
+        default:
           res.status(500).send(err.message)
-        }
-      })
+      }
+    } else {
+      res.status(500).send(err.message)
+    }
   }
 }
 
 export const UpdateClinics = async (req, res) => {
-  if (Object.keys(req.body).length === 0) {
-    res.status(500).send({ message: 'Invalid request, missing body' })
-  } else {
-    await prisma.clinics
-      .update({
+  try {
+    if (Object.keys(req.body).length === 0) {
+      res.status(500).send({ message: 'Invalid request, missing body' })
+      return
+    } else {
+      const clinics = await prisma.clinics.update({
         where: {
           id: Number(req.params.id)
         },
@@ -63,35 +62,33 @@ export const UpdateClinics = async (req, res) => {
           provinceId: req.body.provinceId
         }
       })
-      .then((clinics) => {
-        console.log(clinics)
-        res.send(clinics)
-      })
-      .catch((err) => {
-        if (err.code === 'P2002') {
-          switch (err.meta.target) {
-            case 'clinicName_unique':
-              res.status(500).send({ message: 'clinic name already exists' })
-              break
-            case 'clinicEmail_unique':
-              res.status(500).send({ message: 'clinic email already exists' })
-              break
-            case 'clinicPhone_unique':
-              res.status(500).send({ message: 'clinic phone already exists' })
-              break
-            default:
-              res.status(500).send(err.message)
-          }
-        } else {
+      console.log(clinics)
+      res.send(clinics)
+    }
+  } catch (err) {
+    if (err.code === 'P2002') {
+      switch (err.meta.target) {
+        case 'clinicName_unique':
+          res.status(500).send({ message: 'clinic name already exists' })
+          break
+        case 'clinicEmail_unique':
+          res.status(500).send({ message: 'clinic email already exists' })
+          break
+        case 'clinicPhone_unique':
+          res.status(500).send({ message: 'clinic phone already exists' })
+          break
+        default:
           res.status(500).send(err.message)
-        }
-      })
+      }
+    } else {
+      res.status(500).send(err.message)
+    }
   }
 }
 
 export const DeleteClinics = async (req, res) => {
-  await prisma.clinics
-    .update({
+  try {
+    const clinics = await prisma.clinics.update({
       where: {
         id: Number(req.params.id)
       },
@@ -109,19 +106,17 @@ export const DeleteClinics = async (req, res) => {
         }
       }
     })
-    .then(() => {
-      console.log('clinic deleted successfully')
-      res.send({ message: 'Clinic deleted successfully' })
-    })
-    .catch((err) => {
-      console.log(err)
-      res.status(500).send({ message: err.message })
-    })
+    console.log('clinic deleted successfully')
+    res.send({ message: 'Clinic deleted successfully', clinic: clinics })
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: err.message })
+  }
 }
 
 export const GetClinics = async (req, res) => {
-  await prisma.clinics
-    .findMany({
+  try {
+    const clinics = await prisma.clinics.findMany({
       where: {
         deleted: false
       },
@@ -164,32 +159,30 @@ export const GetClinics = async (req, res) => {
         }
       }
     })
-    .then((clinic) => {
-      const clinics = clinic.map((clin) => {
-        return {
-          clinic_name: clin.clinicName,
-          clinic_phone: clin.clinicPhone,
-          clinic_email: clin.clinicEmail,
-          clinic_location: clin.clinicLocation,
-          clinic_province: {
-            clinic_province_id: clin.Provinces.id,
-            clinic_province_name: clin.Provinces.provinceName
-          },
-          clinic_doctors: clin.Doctors.map((doctor) => doctor)
-        }
-      })
+    const clinic = clinics.map((clin) => {
+      return {
+        clinic_name: clin.clinicName,
+        clinic_phone: clin.clinicPhone,
+        clinic_email: clin.clinicEmail,
+        clinic_location: clin.clinicLocation,
+        clinic_province: {
+          clinic_province_id: clin.Provinces.id,
+          clinic_province_name: clin.Provinces.provinceName
+        },
+        clinic_doctors: clin.Doctors.map((doctor) => doctor)
+      }
+    })
 
-      res.send(clinics)
-    })
-    .catch((err) => {
-      console.log(err)
-      res.status(500).send({ message: 'Error: ' + err.message })
-    })
+    res.send(clinic)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: 'Error: ' + err.message })
+  }
 }
 
 export const GetClinicsById = async (req, res) => {
-  await prisma.clinics
-    .findMany({
+  try {
+    const clinics = await prisma.clinics.findMany({
       where: {
         AND: [
           {
@@ -241,29 +234,27 @@ export const GetClinicsById = async (req, res) => {
         }
       }
     })
-    .then((clinic) => {
-      if (clinic.length > 0) {
-        const clinics = clinic.map((clin) => {
-          return {
-            clinic_name: clin.clinicName,
-            clinic_phone: clin.clinicPhone,
-            clinic_email: clin.clinicEmail,
-            clinic_location: clin.clinicLocation,
-            clinic_province: {
-              clinic_province_id: clin.Provinces.id,
-              clinic_province_name: clin.Provinces.provinceName
-            },
-            clinic_doctors: clin.Doctors.map((doctor) => doctor)
-          }
-        })
+    if (clinics.length > 0) {
+      const clinic = clinics.map((clin) => {
+        return {
+          clinic_name: clin.clinicName,
+          clinic_phone: clin.clinicPhone,
+          clinic_email: clin.clinicEmail,
+          clinic_location: clin.clinicLocation,
+          clinic_province: {
+            clinic_province_id: clin.Provinces.id,
+            clinic_province_name: clin.Provinces.provinceName
+          },
+          clinic_doctors: clin.Doctors.map((doctor) => doctor)
+        }
+      })
 
-        res.send(clinics)
-      } else {
-        res.status(404).send({ message: 'No Clinics found' })
-      }
-    })
-    .catch((err) => {
-      console.log(err)
-      res.status(500).send({ message: 'Error: ' + err.message })
-    })
+      res.send(clinic)
+    } else {
+      res.status(404).send({ message: 'No Clinics found' })
+    }
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: 'Error: ' + err.message })
+  }
 }
